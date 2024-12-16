@@ -338,3 +338,82 @@
     - 어떤 타입이든 될 수 있기 때문에 특정 타입에서만 존재하는 멤버를 참조하려고 하면 안됨
     - 제네릭을 사용할 때 파일 확장자가 tsx인 경우 화살표 함수에 제네릭을 사용하면 안됨
     tsx 는 타입 스크립트 + JSX이므로 제네릭의 꺽쇠와 태그의 꺽쇠를 혼동하여 문제가 생김
+
+## 3.3 제네릭 사용법
+
+- 함수의 제네릭 → 매개변수, 반환 값에 다양한 타입을 넣고 싶을 때 사용함. 타입에 따라 함수의 사용이 바뀜
+- 호출 시그니처를 사용할 때 제네릭 타입을 어디에 위치시키는지에 따라 타입의 범위와 제네릭 타입을 언제 구체 타입으로 한정할지를 결정할 수 있음
+- 제네릭 클래스 → 외부에서 입력된 타입을 클래스 내부에 적용할 수 있는 클래스. 클래스 전체에 걸쳐 타입 매개변수가 적용된다.
+- 제한된 제네릭 → 타입 매개변수에 대한 제약 조건을 설정하는 기능. 제약하려면 타입 매개변수는 특정 타입을 상속해야 한다.
+    
+    ```tsx
+    //이렇게 extends를 사용하여 string 타입으로 제약할 수 있다.
+    type ERecord<Key extends string> = Exclude<Key ECodeType> extends ...
+    
+    //기본 타입 뿐만 아니라 인터페이스, 클래스, 유니온 타입 등을. 상속해서 선언할 수도 있다.
+    
+    //선언 예시
+    function uSelectPage<T extends CardList | CommonResponse>({ ...
+    
+    //사용 예시
+    const {data, ...} = uSelectPage<CardList>({...
+    ```
+    
+- 제네릭은 여러 타입을 상속받을 수 있으며 타입 매개변수를 여러개 둘 수 있다. 또한 `<Key extends string>` 이런 식으로 제약해버리면 제네릭의 유연성을 잃어 버리기에 타입 매개 변수에 유니온 타입을 상속해서 선언하자 `<Key extends string | number>`
+- 유니온 타입으로 T 가 여러 타입을 받게 할 수 있지만 타입 매개변수가 여러개일 때는 처리 할 수 없다. 이럴 때는 매개변수를 하나 더 추가하여 선언하자.
+- 제네릭의 장점은 다양한 타입을 받게 함으로써 코드를 효율적으로 재사용할 수 있는 것이다. 현업에서는 API 응답 값의 타입을 지정할 때 많이 쓰인다.
+
+```tsx
+
+//API 응답 값에 따라 달라지는 data를 제네릭 타입 data로 선언하여 사용
+export interface MobileApiResponseData> {
+	data: Data;
+	statusCode: string;
+	statusMessage?: string;
+}
+
+export const fetchPriceInfo = (): Promise<MobileApiResponse<PriceInfo>> => {
+	const priceUrl = "https: ~~"; // url 주소
+	
+	return request({
+	method: "GET",
+	url: priceurl,
+	});
+	
+};
+export const fetchOrder Info = (): Promise<MobileApiResponse<Order>> => {
+	const orderUrl = "https: ~~"; // url 주소
+	
+	return request({
+	method: "GET",
+	url: orderUrl,
+	});
+	
+};
+```
+
+- 제네릭은 가독성을 높이고 코드를 효율적으로 작성할 수 있지만 굳이 필요하지 않은 곳에 사용하면 오히려 코드가 복잡해진다.
+- 제네릭을 잘못 사용하는 예시
+    - 제네릭을 굳이 사용하지 않아도 되는데 그냥 씀
+        
+        ```tsx
+        //GType이 다른데 사용되지 않고 이 함수의 반환값으로만 사용될 경우
+        //그냥 제네릭을 사용하지 않고 타입 매개변수를 그대로 선언하는 것과 같은데 제네릭이 억지로 들어감
+        type GType<T> = T;
+        type RequirementType = "USE" | "UN_USE" | "NON_SELECT";
+        interface Order {
+        	getRequirement(): GType<Requirement Type>;
+        }
+        
+        //이렇게 쓰는 것과 같다.
+        type RequirementType = "USE" | "UN_USE" | "NON_SELECT";
+        interface Order {
+        	getRequirement(): RequirementType;
+        }
+        ```
+        
+    - any 사용하는 경우
+        - any를 사용하면 제네릭의 장점과 타입 추론 및 타입 검사를 할 수 있는 이점을 누릴 수 없게 됨
+        - any 타입은 모든 타입을 허용하기 때문
+    - 가독성 고려하지 않고 쓰는 경우
+        - 제네릭이 과하게 쓰이면 가독성을 해침
