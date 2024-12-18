@@ -448,21 +448,23 @@ function withdraw(type: Card | Account) {
 withdraw({ card: "hyundai", account: "hana" });
 ```
 
-타입을 이렇게 유니온 타입으로 작성하면 `card` 속성과 `account` 속성을 모두 받아도 타입 에러가 발생하지 않는다. 유니온 타입이므로 `card` 속성이 들어올 수도 있고, `account` 속성이 들어올 수도 있기 때문이다. 물론 같이 들어오는 것도 가능하다.
-
-이런 문제를 해결하기 위해 식별할 수 있는 유니온을 사용할 수도 있으나, 모든 타입에 판별자를 달아줘야 하는 번거로움이 존재한다. 만약 이미 모든 구현이 끝난 상태에서는 더더욱 번거로울 것이다. 모든 타입에 판별자를 작성해주지 않는 실수를 저지를 수도 있다.
+이렇게 유니온 타입으로 작성하면 `card` 속성과 `account` 속성을 모두 가진 객체도 타입 에러가 발생하지 않는다. 유니온 타입이므로 `card` 속성이 들어올 수도 있고, `account` 속성이 들어올 수도 있기 때문이다. 개발자의 의도대로라면 유효하지 않은 타입이 들어온 상황이므로 에러를 발생시켜야 이상적일 것이다.
 
 &nbsp;
 
-궁극적으로 구현하고자 하는 타입은 **`card` 또는 `account` 속성 하나만 존재하는 객체를 받는 타입**이다. `account`일 때는 `card`를 받지 못하고, `card`일 때는 `account`를 받지 못하게 하려면? 
+이런 문제를 해결하기 위해 식별할 수 있는 유니온을 사용할 수도 있으나, 모든 타입에 판별자를 달아줘야 하는 번거로움이 존재한다. 만약 이미 모든 구현이 끝난 상태라면 일일히 판별자를 추가해주다가 일부 작성해주지 않는 실수를 저지를 수도 있다.
 
-**허용하고 싶지 않은 속성을 배타적으로 옵셔널한 `undefined` 값으로 설정**해주면 된다. 이렇게 하면 의도적으로 `undefined` 값을 할당하지 않는 이상 타입 에러가 발생하게 된다. (`undefined` 타입에는 `undefined` 값 밖에 할당할 수 없기 때문이다.)
+&nbsp;
+
+궁극적으로 개발자가 구현하고자 하는 타입은 **`card` 또는 `account` 속성 하나만 존재하는 객체를 받는 타입**이다. `account`일 때는 `card`를 받지 못하고, `card`일 때는 `account`를 받지 못하게 하려면 어떻게 해야 할까?
+
+**상호배타적이어야 하는 속성을 옵셔널한 `undefined` 값으로 설정**해주면 된다. 이렇게 하면 의도적으로 `undefined` 값을 할당하지 않는 이상 타입 에러가 발생하게 된다. (`undefined` 타입에는 `undefined` 값 밖에 할당할 수 없기 때문이다.)
 
 ```ts
 { account: string; card?: undefined } | { account?: undefined; card: string }
 ```
 
-결국 선택하고자 하는 하나의 속성을 제외한 나머지 값을 옵셔널 + undefined 타입으로 설정해주면 원하는 속성을 제외하면 타입 에러를 발생시킬 것이다.
+결국 선택하고자 하는 하나의 속성을 제외한 나머지 값을 옵셔널 + undefined 타입으로 설정해주면 원하는 속성을 제외하면 타입 에러를 발생시킬 것이다
 
 &nbsp;
 
@@ -474,9 +476,11 @@ type PickOne<T>= {
 }[keyof T];
 ```
 
-`PickOne<T>`을 자세히 살펴보자. 두 가지 타입을 합쳐서 만든 것으로 생각할 수 있다. 여기서 T는 항상 객체가 들어온다고 생각하자.
+&nbsp;
 
-해당 객체에 PickOne을 적용하려고 한다.
+이제 `PickOne<T>`을 자세히 살펴보자. 두 가지 타입을 합쳐서 만든 것으로 생각할 수 있다. 여기서 T는 항상 객체가 들어온다고 생각하자.
+
+`Example` 객체에 PickOne을 적용하려고 한다.
 
 ```ts
 interface Example {
@@ -493,7 +497,7 @@ interface Example {
 type One<T> = { [P in keyof T]: Record<P, T[P]> }[keyof T];
 ```
 
-이 타입은 **특정 객체를 단일 속성을 갖는 객체들의 유니온으로 나열**한다.
+이 타입은 **특정 객체를 단일 속성을 갖는 객체들을 유니온으로 나열**한다.
 
 1. `[P in keyof T]`: P는 T 객체의 key 값의 모음이다.
 2. `Record<P, T[P]>`: P 타입을 key로 가지고, value로 P를 key로 갖는 T 객체의 값의 레코드 객체다.
@@ -504,7 +508,7 @@ type One<T> = { [P in keyof T]: Record<P, T[P]> }[keyof T];
 
 ```ts
 // [P in keyof T]의 결과
-// P는 'a' | 'b'
+P = 'a' | 'b'
 
 // { [P in keyof T]: Record<P, T[P]> }의 결과
 {
@@ -512,7 +516,7 @@ type One<T> = { [P in keyof T]: Record<P, T[P]> }[keyof T];
     b: Record<'b', number>   // b : { b: number }
 }
 
-// [keyof T]의 결과
+// [keyof T]를 적용한 결과
 // 위 객체에서 모든 값들만 추출해서 유니온으로 만듦
 { a: string } | { b: number }
 
@@ -536,14 +540,32 @@ type ExcludeOne<T> = { [P in keyof T]: Partial<Record<Exclude<keyof T, P>, undef
 2. `<Exclude<keyof T, P>`: T 객체의 key 모음에서 P 타입의 key를 제외한다. 이것을 A 타입이라고 하자.
 3. `Record<A, undefined>`: A 타입을 key로, undefined를 value로 갖는 레코드 타입이다. (`[key]: undefined`) 이것을 B 타입이라고 하자.
 4. `Partial<B>`: B 타입을 모두 옵셔널로 변환한다. (`[key]?: undefined`)
-5. 4번에서 생성된 객체를 key 값으로 접근한다. (객체에서 값만 추출)
+5. 4번에서 생성된 객체를 key 값으로 접근한다. (객체에서 값만 추출한다.)
 
 ```ts
-type Result = ExcludeOne<{
-    a: string;
-    b: number;
-}>;
+// [P in keyof T]의 결과
+P = 'a' | 'b'
 
+// keyof T와 P를 대입한 결과
+{
+  a: Partial<Record<Exclude<'a' | 'b', 'a'>, undefined>>,
+  b: Partial<Record<Exclude<'a' | 'b', 'b'>, undefined>>
+}
+
+// Exclude한 결과
+{
+  a: Partial<Record<'b', undefined>>, // a: Partial<{ b: undefined }>,
+  b: Partial<Record<'a', undefined>> // b: Partial<{ a: undefined }>
+}
+
+// Partial을 적용한 결과
+{
+  a: { b?: undefined },
+  b: { a?: undefined }
+}
+
+// 최종 결과
+type Result = ExcludeOne<Example>;
 // { b?: undefined } | { a?: undefined }
 ```
 
@@ -563,7 +585,7 @@ type Result = PickOne<Example>;
 
 최종적으로 원하는 속성 하나(`One<T>`)를 제외한 모든 속성을 옵셔널 + undefined로 만드는(`ExcludeOne<T>`) 유틸리티 함수가 완성됐다.
 
-마지막으로 처음에 본 예시에 `PickOne`을 적용해 보자.
+마지막으로 처음에 봤던 예제 코드에 `PickOne`을 적용해 보자.
 
 ```ts
 type CardOrAccount = PickOne<Card & Account>;
@@ -579,7 +601,7 @@ withdraw({ card: "hyundai", account: "hana" }); // 에러 발생
 
 ### 3. NonNullable 타입 검사 함수를 사용하여 간편하게 타입 가드하기
 
-`null`을 가질 수 있는 값의 `null` 처리를 해줄 때, if문을 이용해서 `null` 처리 타입 가드를 적용할 수 있다.
+`null`을 가질 수 있는 값의 `null` 처리를 해줄 때, 일반적으로는 if문을 이용해서 `null` 처리 타입 가드를 적용할 수 있다.
 
 ```ts
 interface User {
@@ -600,7 +622,7 @@ function processUserEmail(user: User) {
 
 &nbsp;
 
-다른 방법도 있다. `is`와 `NonNullable` 유틸리티 타입으로 타입 검사를 위한 유틸리티 함수를 만들어서 사용하는 방법이다.
+유틸리티 함수를 사용해서 간편하게 타입 가드를 해주는 방법도 있다. `is`와 `NonNullable<T>` 유틸리티 타입으로 타입 검사를 위한 `NonNullable` 유틸리티 함수를 작성해서 사용하면 된다.
 
 ```ts
 type NonNullable<T> = T extends null | undefined ? never : T;
@@ -644,15 +666,17 @@ const shopList = [
 ];
 
 const shopAdCampaignList = await Promise.all(shopList.map((shop)=> AdCampaignAPI.operating(shop.shopNo)));
-  
-const shopAds = shopAdCampaignList.filter(NonNullable);
 ```
 
 `shopAdCampaignList`는 `null`을 반환할 수도 있기 때문에 `Array<AdCampaign[] | null>`로 추론된다.
 
-만약 이를 if문으로 타입 가드하게 되면 고차 함수 내 콜백 함수에서 리스트를 순회할 때마다 if문을 거쳐야 한다. 또는 단순하게 필터링한다면 (`shopAdCampaignList.filter ((Shop)=>!!shop)]`, falsy 값들 (null, undefined, 0, "", false, NaN)은 false로 변환, 나머지는 true로 변환)
+만약 이를 if문으로 타입 가드하게 되면 고차 함수 내 콜백 함수에서 리스트를 순회할 때마다 매번 if문을 거쳐야 한다. 또는 단순하게 필터링한다면 (`shopAdCampaignList.filter ((Shop)=>!!shop)]`, `!!` 연산자로 falsy 값들 (null, undefined, 0, "", false, NaN)을 false로 변환, 나머지는 true로 변환)
 
-이때 `NonNullable` 함수를 사용하면 `null`이 제외한 타입으로 추론해줄 수 있다.
+이때 `NonNullable` 함수를 사용하면 `null`이 제외된, 좁혀진 타입으로 추론해줄 수 있다.
+
+```ts
+const shopAds = shopAdCampaignList.filter(NonNullable); // Array<AdCampaign[]>
+```
 
 &nbsp;
 
@@ -728,7 +752,7 @@ const ButtonWrap = styled.button<Omit<Props, "onClick">>`
 `;
 ```
 
-이제 `Props`에서 `string`으로 받아왔던 타입을, 상숫값 객체를 `keyof`와 `typeof`를 사용해서 `theme` 객체 타입에서 추출한 타입으로 바꿔 `Button` 컴포넌트에 활용해보자.
+`Props`에서 `string` 타입으로 선언해주었던 속성을, 상숫값 객체를 `keyof`와 `typeof` 키워드를 사용해 추출한 타입으로 바꾸어 `Button` 컴포넌트에 활용해보자.
 
 ```ts
 import React, { FC } from "react";
@@ -759,10 +783,12 @@ const theme = {
   },
 };
 
+// 상숫값에서 타입 추출
 type ColorType = keyof typeof theme.colors;
 type BackgroundColorType = keyof typeof theme.backgroundColors;
 type FontSizeType = keyof typeof theme.fontSize;
 
+// 추출한 타입을 Props에 적용
 interface Props {
   color?: ColorType;
   backgroundColor?: BackgroundColorType;
@@ -791,7 +817,7 @@ const ButtonWrap = styled.button<Omit<Props, "onClick">>`
 `;
 ```
 
-이렇게 사용하면 `Button` 컴포넌트를 사용할 때 IDE가 `backgroundColor` 속성에 존재하는 값만을 보여줄 수 있어 개발 시 편리하다.
+이렇게 사용하면 `Button` 컴포넌트를 사용할 때 IDE가 `backgroundColor` 속성에 존재하는 값만을 제시해줄 수 있어 개발 시 편리하다는 장점도 있다.
 
 &nbsp;
 
@@ -827,7 +853,7 @@ foodByCategory["양식"].map((food) => console.log(food.name)); // Uncaught Type
 
 이때 JS의 옵셔널 체이닝을 사용해 런타임 에러를 방지할 수는 있다. 
 
-> 💡 옵셔널 체이닝이란? 객체의 속성을 찾을 때 중간에 없는 값에 대해 (`null` 또는 `undefined`) `undefined`를 반환한다.
+> 💡 옵셔널 체이닝이란? `.?`와 같이 사용한다. 객체의 속성을 찾는 중간에 없는 값에 대해 (`null` 또는 `undefined`) `undefined`를 반환한다.
 
 하지만 어떤 값이 `undefined`인지 매번 판단해야 하는 번거로움이 있다. 또한 의도적으로 `undefined`일 수 있는 값이 존재하면 예상치 못한 런타임 에러가 발생할 수도 있다.
 
@@ -837,7 +863,7 @@ TS의 타입 추론 기능으로 유효하지 않은 키가 사용되었는지, 
 
 ### 2. 유닛 타입으로 변경하기
 
-키를 유한하다면 유닛 타입을 사용하면 된다.
+키가 유한하다면 유닛 타입을 사용하면 된다.
 
 ```ts
 type Category = "한식" | "일식";
