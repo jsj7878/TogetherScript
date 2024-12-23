@@ -26,7 +26,7 @@ const CartBadge: React.FC = () => {
 };
 ```
 
-하지만 코드의 유지보수를 용이하게 하게 위해서는 서비스 레이어로 API 요청하는 부분을 분리하는 것이 좋을 것 같다.
+하지만 코드의 유지보수를 용이하게 하게 위해서는 서비스 레이어로 API 요청하는 부분을 분리하는 것이 좋을 것이다.
 
 &nbsp;
 
@@ -48,13 +48,15 @@ async function fetchCart() {
 }
 ```
 
-`fetch`를 호출하는 함수를 따로 분리했다. 하지만 단순히 `fetch` 함수를 분리하는 것만으로는 추후 다양한 API 요청 정책(타임아웃 설정, 쿼리 매개변수, 커스텀 헤더 추가, 쿠키를 읽어 토큰을 집어넣기 등)을 하나하나 모든 `fetch` 함수에 추가하는 것은 상당히 번거로울 것이다.
+이번에는 `fetch`를 호출하는 함수를 따로 분리했다. 
+
+하지만 단순히 `fetch` 함수를 분리하는 것만으로는 추후 다양한 API 요청 정책(타임아웃 설정, 쿼리 매개변수, 커스텀 헤더 추가, 쿠키를 읽어 토큰을 집어넣기 등)을 하나하나 모든 `fetch` 함수에 추가하는 것은 상당히 번거로울 것이다.
 
 &nbsp;
 
 ### 3. Axios 활용하기
 
-Axios를 사용하면 내장 기능을 통해 타임아웃 같은 API 설정을 쉽게 해줄 수 있다.
+Axios를 사용하면 내장 기능을 통해 타임아웃 같은 API 설정을 쉽게 추가해줄 수 있다.
 
 ```ts
 import axios, { AxiosInstance, AxiosPromise } from "axios";
@@ -209,7 +211,7 @@ export default API;
 
 &nbsp;
 
-기본 API 클래스로 실제 호출 부분을 작성하고, 이 API를 호출하기 위한 Wrapper를 빌더 패턴으로 만든다.
+기본 API 클래스로 실제 호출 부분을 작성하고, 이 API를 호출하기 위한 Wrapper(`class`)를 빌더 패턴으로 만든다.
 
 ```ts
 import API, { HTTPHeaders, HTTPMethod, HTTPParams } from "./7.1.4-2";
@@ -278,7 +280,7 @@ class APIBuilder {
 export default APIBuilder;
 ```
 
-빌더 클래스를 사용하는 예시는 다음과 같다.
+해당 빌더 클래스를 사용하는 예시는 다음과 같다.
 
 ```ts
 import APIBuilder from "./7.1.4-3";
@@ -347,7 +349,9 @@ interface response {
 }
 ```
 
-만약 `forPass` 안에 로직에서 사용되는 값이 있어도 `unknown`을 유지하는 게 좋다. 로그를 위해 단순히 받아서 넘겨주는 값의 타입은 언제든 변경될 수 있으므로 `forPass` 내의 값을 사용하지 않아야 한다. 다만 프로덕트에서 이미 사용하고 있는 값이라면 로직에서 사용하는 값에 대해서만 타입 단언으로 사용할 수 있다.
+만약 `forPass` 안에 로직에서 사용되는 값이 있어도 `unknown`을 타입을 유지하는 게 좋다. 
+
+로그를 위해 단순히 받아서 넘겨주는 값의 타입은 언제든 변경될 수 있으므로 `forPass` 내의 값을 사용하지 않아야 한다. 다만 프로덕트에서 이미 사용하고 있는 값이라면 로직에서 사용하는 값에 대해서만 타입 단언으로 사용할 수 있다.
 
 ```ts
 type ForPass = {
@@ -363,7 +367,7 @@ const isTargetValue = () => (data.forPass as ForPass).type === "A";
 
 API 응답은 자주 변경될 가능성이 있다. 뷰 모델을 사용하여 API 변경에 따른 범위를 한정해줄 수 있다.
 
-뷰 모델을 사용함으로써 컴포넌트의 변경, 수정을 줄일 수 있다.
+뷰 모델을 사용함으로써 컴포넌트 코드의 변경, 수정을 줄일 수 있다.
 
 ```ts
 interface JobListResponse {
@@ -408,7 +412,7 @@ const fetchJobList = async (
 1. 추상화 레이어를 추가하게 되면 코드가 복잡해지고 레이어를 관리하는데 번거로움이 생긴다.
 2. API 응답에 없는 새로운 필드를 만들 때 서버와 클라이언트가 실제 사용하는 도메인이 다르면 서버, 클라이언트 간 의사소통 문제가 생길 수 있다.
 
-결국 API 응답이 바뀌는 일이 최대한 없는 것이 좋고, 어쩔 수 없이 변경될 때는 코드 수정에 들어가는 비용을 최대한 줄이고 도메인의 일관성을 지킬 수 있는 절충안을 찾아야 한다.
+결국 API 응답이 바뀌는 일이 최대한 없는 것이 제일 이상적이며, 어쩔 수 없이 변경될 때는 코드 수정에 들어가는 비용을 최대한 줄이고 도메인의 일관성을 지킬 수 있는 절충안을 찾아야 한다.
 
 &nbsp;
 
@@ -452,7 +456,7 @@ validate(data, Article);
 
 * `assert(data, Type)`: 유효하지 않을 경우 에러 반환
 * `is(data, Type)`: 유효성 검사에 따라 `true` 혹은 `false` 반환
-* `validate(data, Type)`: `[error, data]` 형식의 튜플 반환, 유효하지 않을 경우는 에러, 유효한 경우 `[undefined, data value]` 반환
+* `validate(data, Type)`: `[error, data]` 형식의 튜플을 반환하며 유효하지 않을 경우는 에러, 유효한 경우 `[undefined, data value]` 반환
 * Infer: `Superstruct`의 스키마를 TS 타입으로 변환
 
 &nbsp;
@@ -477,13 +481,21 @@ function isListItem(listItems: ListItem[]) {
 
 ### 1. 상태 관리 라이브러리에서 호출하기
 
-Redux, MobX의 예시를 상태 관리 예시를 소개한다.
+해당 절에서는 Redux, MobX의 예시를 상태 관리 예시를 소개한다.
+
+Redux는 전역 상태 관리만을 위한 라이브러리라 비동기 상태를 관리하기 위한 미들웨어를 사용할 수 밖에 없다. 따라서 보일러플레이트 코드가 많아지고, 비동기 상태를 관리하기 어렵다.
+
+MobX는 비동기 콜백 함수를 분리하여 액션으로 만들거나 `runInAction` 같은 메서드를 통해 상태 변경을 처리한다.
+
+상태 관리 라이브러리는 비동기 처리 함수를 호출하기 위해 액션이 추가될 때마다 관련된 스토어나 상태가 계속 늘어나고, 전역 상태 관리자가 모든 비동기 상태에 접근하고 변경할 수 있어, 다수의 컴포넌트가 같은 비동기 상태를 구독하고 있으면 쓸데없는 비동기 통신이 발생하거나 의도치 않은 상태 변경이 일어나기 쉽다.
 
 &nbsp;
 
 ### 2. 훅으로 호출하기
 
-react-query를 사용해 만든 훅을 통한 상태 관리 예시를 소개한다.
+해당 절에서는 react-query를 사용해 만든 훅을 통한 상태 관리 예시를 소개한다.
+
+상태 관리 라이브러리를 사용한 방식보다 간편하다. 캐시를 사용하여 비동기 함수를 호출하며, 상태 관리 라이브러리의 단점인 의도치 않은 상태 변경을 방지해준다. 
 
 &nbsp;
 
@@ -493,11 +505,136 @@ react-query를 사용해 만든 훅을 통한 상태 관리 예시를 소개한�
 
 Axios에서 제공되는 `isAxiosError`를 직접 활용할 수도 있고, 명시적인 서버 에러임을 표시하기 위해 해당 함수를 이용해 타입 가드 함수를 만들어 사용하는 예시를 소개하고 있다.
 
+```ts
+function isServerError(error: unknown): error is AxiosError<ErrorResponse> {
+  return axios.isAxiosError(error);
+}
+```
+
+```ts
+const onClickDeleteHistoryButton = async (id: string) => {
+  try {
+    await axios.post("https://....", { id });
+
+    alert("주문 내역이 삭제되었습니다.");
+  } catch (error: unknown) {
+    if (isServerError(e) && e.response && e.response.data.errorMessage) {
+      // 서버 에러일 때의 처리임을 명시적으로 알 수 있다 setErrorMessage(e.response.data.errorMessage);
+      return;
+    }
+    setErrorMessage("일시적인 에러가 발생했습니다. 잠시 후 다시 시도해주세요");
+  }
+};
+```
+
 &nbsp;
 
 ### 2. 에러 서브클래싱하기
 
 인증 정보 에러, 네트워크 에러, 타임아웃 에러 등 다양한 에러를 핸들링하기 위해 에러를 서브클래싱(기존 클래스를 확장하여 새로운 클래스를 만드는 과정)할 수 있다.
+
+아래 코드는 `Error` 객체를 상속해서 명시적인 에러를 정의해주고 있다.
+
+
+```ts
+class OrderHttpError extends Error {
+  private readonly privateResponse: AxiosResponse<ErrorResponse> | undefined;
+
+  constructor(message?: string, response?: AxiosResponse<ErrorResponse>) {
+    super(message);
+    this.name = "OrderHttpError";
+    this.privateResponse = response;
+  }
+
+  get response(): AxiosResponse<ErrorResponse> | undefined {
+    return this.privateResponse;
+  }
+}
+
+class NetworkError extends Error {
+  constructor(message = "") {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
+class UnauthorizedError extends Error {
+  constructor(message: string, response?: AxiosResponse<ErrorResponse>) {
+    super(message, response);
+    this.name = "UnauthorizedError";
+  }
+}
+
+const httpErrorHandler = (
+  error: AxiosError<ErrorResponse> | Error
+): Promise<Error> => {
+  let promiseError: Promise<Error>;
+
+  if (axios.isAxiosError(error)) {
+    if (Object.is(error.code, "ECONNABORTED")) {
+      promiseError = Promise.reject(new TimeoutError());
+    } else if (Object.is(error.message, "Network Error")) {
+      promiseError = Promise.reject(new NetworkError());
+    } else {
+      const { response } = error as AxiosError<ErrorResponse>;
+      switch (response?.status) {
+        case HttpStatusCode.UNAUTHORIZED:
+          promiseError = Promise.reject(
+            new UnauthorizedError(response?.data.message, response)
+          );
+          break;
+        default:
+          promiseError = Promise.reject(
+            new OrderHttpError(response?.data.message, response)
+          );
+      }
+    }
+  } else {
+    promiseError = Promise.reject(error);
+  }
+
+  return promiseError;
+};
+```
+
+아래 코드는 서브클래싱한 에러를 사용하는 예시 코드다.
+
+```ts
+const alert = (meesage: string, { onClose }: { onClose?: () => void }) => {};
+
+const onActionError = (
+  error: unknown,
+  params?: Omit<AlertPopup, "type" | "message">
+) => {
+  if (error instanceof UnauthorizedError) {
+    onUnauthorizedError(
+      error.message,
+      errorCallback?.onUnauthorizedErrorCallback
+    );
+  } else if (error instanceof NetworkError) {
+    alert("네트워크 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.", {
+      onClose: errorCallback?.onNetworkErrorCallback,
+    });
+  } else if (error instanceof OrderHttpError) {
+    alert(error.message, params);
+  } else if (error instanceof Error) {
+    alert(error.message, params);
+  } else {
+    alert(defaultHttpErrorMessage, params);
+  }
+
+  const getOrderHistory = async (page: number): Promise<History> => {
+    try {
+      const { data } = await fetchOrderHistory({ page });
+      const history = await JSON.parse(data);
+
+      return history;
+    } catch (error) {
+      onActionError(error);
+    }
+  };
+};
+```
 
 &nbsp;
 
@@ -617,6 +754,72 @@ const JobComponent: React.FC = () => {
 
 ### 7. 그 밖의 에러 처리
 
+커스텀 에러로 200 응답과 함께 응답 바디에 별도의 상태 코드를 전달하기도 한다.
+
+```ts
+httpStatus: 200
+{
+  "status": "C20005", // 성공인 경우 "SUCCESS"를 응답
+  "message": "장바구니에 품절된 메뉴가 있습니다."
+}
+```
+
+아래 코드와 같이 처리해줄 수 있다.
+
+```ts
+const successHandler = (response: CreateOrderResponse) => {
+  if (response.status === "SUCCESS") {
+    // 성공 시 진행할 로직을 추가한다
+    return;
+  }
+  throw new CustomError(response.status, response.message);
+};
+const createOrder = (data: CreateOrderData) => {
+  try {
+    const response = apiRequester.post("https://...", data);
+
+    successHandler(response);
+  } catch (error) {
+    errorHandler(error);
+  }
+};
+```
+
+API가 많을 때는 매번 if 구문을 추가해줘야 하므로 번거롭다.
+
+
+커스텀 에러를 사용중인 요청을 일괄적으로 에러로 처리하고 싶으면 특정 호스트에 대한 API requester를 별도로 선언하고 상태 코드 비교 로직을 인터셉터에 추가해주면 된다.
+
+```ts
+export const apiRequester: AxiosInstance = axios.create({
+  baseURL: orderApiBaseUrl,
+  ...defaultConfig,
+});
+
+export const httpSuccessHandler = (response: AxiosResponse) => {
+  if (response.data.status !== "SUCCESS") {
+    throw new CustomError(response?.data.message, response);
+  }
+
+  return response;
+};
+
+apiRequester.interceptors.response.use(httpSuccessHandler, httpErrorHandler);
+
+const createOrder = (data: CreateOrderData) => {
+  try {
+    const response = apiRequester.post("https://...", data);
+
+    successHandler(response);
+  } catch (error) {
+    // status가 SUCCESS가 아닌 경우 에러로 전달된다
+    errorHandler(error);
+  }
+};
+```
+
+인터셉터에서 커스텀 에러를 판단하고 에러를 던짐으로써 외부에서 200번 대로 온 응답이라도 400번 대, 500번 대 같은 에러로 받게 된다.
+
 &nbsp;
 
 ## 7.4 API 모킹
@@ -629,7 +832,7 @@ charles 등의 테스팅 툴을 활용하면 이슈 발생 상황을 재현해�
 
 > 💡 charles: 웹 디버깅 프록시로, 시스템과 인터넷 간의 모든 HTTP 및 SSL/HTTPS 트래픽을 보고 가로채고 분석할 수 있다.
 >
-> 우아안기술블로그 참고: [너 혹시 T(Tester)야? : 테스트 효율을 높이는 Charles 툴 활용기](https://techblog.woowahan.com/14550/)
+> 참고할 만한 글: [[우아한기술블로그] 너 혹시 T(Tester)야? : 테스트 효율을 높이는 Charles 툴 활용기](https://techblog.woowahan.com/14550/)
 > 
 > 💡 axios-mock-adapter: 가짜 axios 요청을 발생시키는 라이브러리
 > 
