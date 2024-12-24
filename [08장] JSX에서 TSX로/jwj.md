@@ -30,10 +30,12 @@ SS는 Snapshot State의 약자로 Snapshot State의 타입을 의미한다. SS�
 
 ```ts
 class ScrollingList extends React.Component<Props, State, number> {
+  // DOM 업데이트 전에 스냅샷을 저장
   getSnapshotBeforeUpdate(prevProps: Props, prevState: State): number {
     return this.listRef.current.scrollHeight;
   }
 
+  // DOM 업데이트 후 실행되어 스냅샷 값을 사용해 스크롤 위치 조정
   componentDidUpdate(prevProps: Props, prevState: State, snapshot: number) {
     // snapshot은 getSnapshotBeforeUpdate에서 반환한 값입니다.
     this.listRef.current.scrollTop += this.listRef.current.scrollHeight - snapshot;
@@ -351,7 +353,7 @@ const Item = ({ icon }: Props) => {
 
 &nbsp;
 
-### DetailedHTMLProps와 ComponentWithoutRef
+### `DetailedHTMLProps`와 `ComponentWithoutRef`
 
 HTML 태그의 속성 타입을 활용하는 대표적인 2가지 방법은 리액트의 두 가지 타입을 활용하는 것이다.
 
@@ -378,17 +380,17 @@ type ButtonProps = {
 };
 ```
 
-`MouseEventHandler` 타입의 `onClick` 속성을 가져온다.
+`NativeButtonType["onClick"]`은 `MouseEventHandler` 타입의 `onClick` 속성을 가져온다.
 
 &nbsp;
 
-### 언제 ComponentPropsWithoutRef를 사용하면 좋을까?
+### 언제 `ComponentPropsWithoutRef`를 사용하면 좋을까?
 
-해당 타입말고도 `HTMLProps`, `ComponentPropsWithRef` 등 HTML 태그의 속성을 지원하기 위한 다양한 타입들이 존재한다.
+`ComponentPropsWithoutRef`말고도 `HTMLProps`, `ComponentPropsWithRef` 등 HTML 태그의 속성을 지원하기 위한 다양한 타입들이 존재한다.
 
-컴포넌트의 props로서 HTML 태그 속성을 확장하고 싶을 때의 상황에 초점을 맞춰서 생각해보자.
+여기서는 컴포넌트의 props로서 HTML 태그 속성을 확장하고 싶을 때의 상황에 초점을 맞춰서 생각해본다.
 
-button 태그를 확장해서 컴포넌트를 만드려면 기존 button 태그의 HTML 속성을 props로 받을 수 있어야 한다.
+button 태그를 확장해서 컴포넌트를 만드려면 기존 button 태그가 가지고 있는 HTML 속성을 props로 받을 수 있어야 한다.
 
 ```ts
 type NativeButtonProps = React.DetailedHTMLProps<
@@ -401,23 +403,27 @@ const Button = (props: NativeButtonProps) => {
 };
 ```
 
-HTMLButtonElement의 속성을 모두 props로 받아 button 태그에 전달해주었다. 그런데 `ref`로 props를 받을 때, 주의할 점이 있다. 
+`HTMLButtonElement`의 속성을 모두 props로 받아 button 태그에 전달해주었다. 그런데 `ref`로 props를 받을 때 주의할 점이 있다. 클래스 컴포넌트와 함수 컴포넌트에서의 `ref` 작동 방식에 차이가 있기 때문이다.
 
-> 💡 ref란? 생성된 DOM 노드나 리액트 엘리먼트에 접근하는 방법이다.
+> 💡 ref란? 생성된 DOM 노드나 리액트 엘리먼트에 직접 접근하는 방법이다.
 >
-> useRef 사용 예시:
->
->  1. DOM 요소에 직접 접근
+> `useRef` 훅 사용 예시:
+>  1. DOM 요소에 직접 접근 및 조작
 >  2. 불필요한 렌더링 방지
 >  3. 렌더링 간 값 저장
 >  4. setTimeout이나 setInterval의 ID를 저장하여 타이머 관리
 
 ```ts
-// 클래스 컴포넌트에서의 useRef
-class Button extends React.Component {
-  constructor(props) {
+// 클래스 컴포넌트에서의 ref 사용
+class Button extends React.Component<NativeButtonType> {
+  buttonRef: React.RefObject<HTMLButtonElement>;
+  constructor(props: NativeButtonType) {
     super(props);
-    this.buttonRef = React.createRef();
+    this.buttonRef = React.createRef<HTMLButtonElement>();
+  }
+
+  componentDidMount() {
+    this.buttonRef.current?.focus();
   }
 
   render() {
@@ -425,7 +431,7 @@ class Button extends React.Component {
   }
 }
 
-// 함수 컴포넌트에서의 useRef
+// 함수 컴포넌트에서의 ref 사용
 function Button(props) {
   const buttonRef = useRef(null);
 
@@ -467,7 +473,7 @@ function Button(ref: NativeButtonProps["ref"]) {
 }
 ```
 
-클래스 컴포넌트의 `ref` 객체는 마운트된 컴포넌트의 인스턴스를 `current` 속성값으로 가지기 때문에 `ref`가 button 태그를 잘 바라보게 되지만, 함수 컴포넌트는 인스턴스를 생성하지 않기 때문에 `ref`가 button 태그를 바라보지 않는다.
+클래스 컴포넌트의 `ref` 객체는 마운트된 컴포넌트의 인스턴스를 `current` 속성값으로 가지기 때문에 `ref`가 button 태그를 잘 바라보게 되지만, 함수 컴포넌트는 인스턴스를 생성하지 않기 때문에 `ref`가 button 태그를 바라보지 않기 때문에, `ref`가 제대로 작동하지 않게 된다.
 
 이러한 제약 때문에 함수 컴포넌트에서도 `ref`를 전달 받을 수 있게 하는 `React.forwardRef` 메서드가 존재한다.
 
@@ -508,9 +514,9 @@ const Button = forwardRef<HTMLButtonElement, NativeButtonType>((props, ref) => {
 });
 ```
 
-`ComponentPropsWithoutRef` 타입은 인자로 받은 속성을 모두 포함하지만, `ref` 속성만 제외해서 가져온다. 
+`ComponentPropsWithoutRef` 타입은 인자로 받은 속성을 모두 포함하지만, `ref` 속성만 제외해서 가져온다.
 
 `ref`를 포함하는 `DetailedHTMLProps`, `HTMLProps`,
-`ComponentpropswithRef` 타입들은 실제 동작하지 않는 `ref`를 받도록 지정되어 있기 때문에 예상치 못한 에러가 발생할 수 있다. 
+`ComponentpropswithRef` 타입들은 실제 동작하지 않는 `ref`를 받도록 지정되어 있기 때문에 예상치 못한 에러가 발생할 수 있다.
 
-HTML 속성을 확장하는 props를 설계할 때는 **`ComponentPropsWithoutRef` 타입을 사용**하여 **`forwarRef`와 함께 사용될 때만 props로 전달되도록** 타입을 정의하는 것이 안전하다.
+HTML 속성을 확장하는 props를 설계할 때는 **`ComponentPropsWithoutRef` 타입을 사용**하여 **`forwarRef`와 함께 사용될 때만 props로 전달되도록 타입을 정의**하는 것이 안전하다.
