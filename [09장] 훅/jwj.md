@@ -399,7 +399,7 @@ function forwardRef<T, P = {}>(
 
 `useImperativeHandle`은 `ForwardRefRenderFunction`(`forwardRef`의 콜백 함수)과 함께 쓸 수 있는 훅이다. 이 훅은 **부모 컴포넌트에서 `ref`를 통해 자식 컴포넌트에서 정의한 메서드를 호출**할 수 있게 해준다. 이에 따라 자식 컴포넌트는 내부 상태나 로직을 관리하면서 부모 컴포넌트와의 결합도를 낮출 수 있다.
 
-아래 코드의 예시는 `useImperativeHandle`을 사용해
+아래 코드의 예시는 `useImperativeHandle`으로 부모 컴포넌트에서 사용할 메서드를 정의하고 있다.
 
 ```ts
 // 자식 컴포넌트
