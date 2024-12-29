@@ -1,4 +1,5 @@
 # 3. 고급 타입
+![The-TypeScript-Hierarchy-1](https://github.com/user-attachments/assets/45c904ac-17d9-4501-88f7-2ed0ecca0f19)
 
 ## 3.1 타입스크립트만의 독자적 타입 시스템
 
