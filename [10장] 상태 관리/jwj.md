@@ -578,3 +578,6 @@ function Controls() {
 3. Action은 Dispatcher를 통해 Store로 전달
 4. Model은 Action에 따라 상태 업데이트
 5. 변경된 상태가 View에 반영
+
+![flux-pattern2](https://github.com/user-attachments/assets/eafd980f-53f4-4f2e-8359-96e82de3a773)
+
