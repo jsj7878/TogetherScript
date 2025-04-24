@@ -6,7 +6,7 @@
 
 ## [우아한 타입스크립트 with 리액트] 스터디 🔆
  
-2024.12.09 - 2024.01.06
+2024.12.09 - 2025.01.06
 
 ![TYPESCRIPT](https://img.shields.io/badge/TYPESCRIPT-3178C6?style=for-the-badge&logo=Typescript&logoColor=white)
 ![REACT](https://img.shields.io/badge/REACT-61DAFB?style=for-the-badge&logo=React&logoColor=black)
